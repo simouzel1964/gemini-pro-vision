@@ -1,0 +1,45 @@
+
+from langchain_google_genai.llms import GoogleGenerativeAI
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+def generate_human_psychological_characters(disorders_type):
+    llm=GoogleGenerativeAI(model="gemini-pro", temperature=0.7)
+
+    prompt_template_name= PromptTemplate(
+    input_variables=['disorders_type'],
+    template=("I have a {disorders_type} and I want to learn about {disorders_type}. Can you give me detailed information and how to care myself")
+)
+    name_chain = LLMChain(llm=llm, prompt=prompt_template_name)
+    response =name_chain({'disorders_type: disorders_type'})
+    return response
+ name_chain = LLMChain(llm=llm, prompt=prompt_template)
+  
+
+if __name__=="__main__":
+    
+    print(generate_human_psychological_characters("Bipolar_Disorder"))    
+
+
+    
+if __name__ == "__main__":
+    st.title("Psychological Character Guide")
+
+    selected_character = st.sidebar.selectbox(
+        "What is your Character?", 
+        ("Empathy", "Resilience", "Self-esteem", 
+         "Self-awareness", "Emotional Intelligence", 
+         "Introversion vs Extroversion", "Neuroticism", "Locus of Control", "Optimism", "Agreeableness")
+    )
+
+    if selected_character:  # Check if a character is selected
+        result = generate_human_psychological_characters(selected_character)
+        st.write(result)
+
+        template="Please provide detailed information about {psychological_characters}, including its symptoms, causes, diagnosis process, treatment options, and self-care tips.My {complain}is. Focus on providing a supportive and informative explanation."
+
+    

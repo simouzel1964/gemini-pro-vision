@@ -1,0 +1,87 @@
+from dotenv import load_dotenv
+import streamlit as st
+import os
+import google.generativeai as genai
+from PIL import Image
+import sqlite3
+
+# Step 1: Load API Key & Configure Model
+load_dotenv()  # Load your API key from the .env file
+genai.configure(api_key=os.getenv("AIzaSyCDthI_42EJCNEKg5rwF9BfCVrh2GUmwVI")) 
+model = genai.GenerativeModel('gemini-pro-vision') 
+
+# Step 2: Database Setup
+conn = sqlite3.connect('user_data.db')  
+cursor = conn.cursor()
+cursor.execute(''' 
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        full_name TEXT,
+        email TEXT
+    )
+''')
+
+
+
+
+# Step 3: User Input Function
+def get_user_info():
+    full_name = st.text_input("Enter your full name:")
+    email = st.text_input("Enter your email address:")
+
+    if full_name and email: 
+        save_user_info(full_name, email)
+        st.success("User information saved!")
+
+    return full_name, email
+
+# Step 4: Save User Data Function
+def save_user_info(full_name, email):
+    with conn:
+        cursor.execute("INSERT INTO users (full_name, email) VALUES (?, ?)", (full_name, email))
+        conn.commit()
+
+# Step 5: Image Description Function (Modify as Needed)
+def get_gemini_response(input, image, full_name, email):
+    # Replace with your GenerativeAI API call logic
+    if input:
+        description = model.generate_content([input, image, full_name, email]) 
+
+    
+    else:
+        description = model.generate_content(image) 
+    print(description)
+    if description:  # Check if description exists
+        extracted_description = description.result.candidates[0].content.parts[0].text  
+        return extracted_description  
+    else:
+        return "Description generation in progress..." 
+
+
+# Step 6: Streamlit App Structure
+st.set_page_config(page_title="Image Demo")
+st.header("Image Teller")
+
+# Get user information 
+full_name, email = get_user_info() 
+
+# Get text input and image upload
+input = st.text_input("Input:", key="input")
+uploaded_file = st.file_uploader("Choose an image ...", type=["jpg", "jpeg", "png", "webp", "video/mp4"])
+
+if uploaded_file is not None:
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Uploaded Image", use_column_width=True)
+
+    if st.button("Tell me about the Image"):
+        with st.spinner("Generating description..."): 
+            response = get_gemini_response(input, image, full_name, email)
+            st.subheader("The Response is")
+            st.write(response) 
+
+
+
+
+
+
+

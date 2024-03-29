@@ -1,0 +1,14 @@
+def get_gemini_response(input, image, full_name, email):
+    # Replace with your GenerativeAI API call logic
+    if input:
+        description = model.generate_content([input, image, full_name, email]) 
+
+    
+    else:
+        description = model.generate_content(image) 
+    print(description)
+    if description:  # Check if description exists
+        extracted_description = description.result.candidates[0].content.parts[0].text  
+        return extracted_description  
+    else:
+        return "Description generation in progress..." 
